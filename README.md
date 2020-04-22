@@ -12,13 +12,39 @@ St. George's University of London
 4. Editing and reshaping data frames  
 5. Subsetting (filtering) and cleaning data  
 
-## To create a copy of this repository in RStudio follow these steps:  
+## Preparation for the workshop  
 
-1. if you haven't already done so, [install first R](https://www.r-project.org/), then [RStudio](https://rstudio.com/products/rstudio/download/) on your computer  
-2. Start RStudio  
-3. File menu > New project...  
-4. Choose: Version Control > Git  
-5. Paste the following address into the "Repository URL" field: https://github.com/nohturfft/r_workshop_2020_04_24  
-6. Press tab key ("Project directory name" field will be filled automatically)  
-7. Choose a desired folder in the "Create project as subdirectory of..." field  
-8. Click the "Create project" button  
+### Expected background knowledge  
+
+1. This will be a beginners/improvers workshop that builds on a [previous beginners workshop](https://github.com/nohturfft/r_workshop_2019_11_29) held in November last year. You are strongly encouraged to briefly review the material covered during the previous workshop.  
+2. We will be working with scripts written in [Rmarkdown](https://rmarkdown.rstudio.com/); you might find it useful to familiarise yourself with this format if you haven't used it before. Consider downloading the [Rmarkdown cheat sheet](https://rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf) as a handy reference.  
+
+
+### Install R and RStudio  
+
+If you haven't already done so, [install first R](https://www.r-project.org/), then [RStudio](https://rstudio.com/products/rstudio/download/) on your computer. That way you can try out the code we'll cover during the practice breaks. Of course, you may choose to just follow the presentation.  
+
+### Install packages  
+
+We will be using a number of different R packages.  
+Please install these by running the following code from the command prompt (note: _**tidyverse includes 26 packages in total; so the installation may take a few minutes**_):  
+
+```
+install.packages("tidyverse")
+install.packages("rmarkdown")
+install.packages("knitr")
+install.packages("DT")
+```
+
+Alternatively, you can install packages using the RStudio `Tools > Install Packages...` menu.  
+
+### To create a copy of this repository in RStudio follow these steps:  
+
+1. Start RStudio  
+2. File menu > New project...  
+3. Choose: Version Control > Git  
+4. Paste the following address into the "Repository URL" field: https://github.com/nohturfft/r_workshop_2020_04_24  
+5. Press tab key ("Project directory name" field will be filled automatically)  
+6. Choose a desired folder in the "Create project as subdirectory of..." field  
+7. Click the "Create project" button  
+8. Open the first script ...
