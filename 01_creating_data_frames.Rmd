@@ -43,7 +43,7 @@ R packages provide additional functions/commands.
 * 'ggplot2' is for plotting  
 * (All six of the above packages are part of the [tidyverse](https://www.tidyverse.org/) family of packages developed by the folks at RStudio).  
 * The '[DT](https://rstudio.github.io/DT/)' package will be used to display data frames as paged html tables.  
-```{r}
+```{r packages, message=FALSE}
 library(magrittr)
 # help(package="magrittr")
 library(readr)
@@ -57,6 +57,11 @@ library(ggplot2)
 library(DT)
 # help(package="DT")
 ```
+
+### Reading data from a local file using RStudio  
+The most convenient way of loading tabular data from a local file is to use RStudio:  
+Open the 'Environment' window/tab, click 'Import dataset' then adjust the controls.  
+Be sure to copy the code and paste it into your script file for future reference.  
 
 ### Read data from a local Excel file  
 * Here we use a function from the tidyverse 'readxl' package.  
