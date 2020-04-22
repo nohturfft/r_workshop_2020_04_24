@@ -31,7 +31,7 @@ knitr::opts_chunk$set(echo = TRUE)
 * In this script we will go through some examples.  
 
 ## Code  
-```{r clean up memory}
+```{r clean up memory, message=FALSE}
 # clear all variables that might be stored from a previous analysis:
 rm(list=ls(all=T))
 ```
