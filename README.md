@@ -34,7 +34,6 @@ install.packages("tidyverse")
 install.packages("rmarkdown")
 install.packages("knitr")
 install.packages("DT")
-install.packages("httr")
 ```
 
 Alternatively, you can install packages using the RStudio `Tools > Install Packages...` menu.  
