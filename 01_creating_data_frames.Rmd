@@ -38,9 +38,11 @@ R packages provide additional functions/commands.
 * The '[magrittr](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html)' package provides pipes (%>%) that allow us to send the output from one command to the next  
 * We'll use functions from the '[readr](https://readr.tidyverse.org/)' package to open CSV and TSV files  
 * We'll use a function from the '[readxl](https://readxl.tidyverse.org/)' package to load data from an Excel file  
-* (All three of the above packages are part of the [tidyverse](https://www.tidyverse.org/) family of packages developed by the folks at RStudio).  
+* 'tidyr' is for "tidying up" (here: reshaping) data  
+* 'lubridate' is for working with dates  
+* 'ggplot2' is for plotting  
+* (All six of the above packages are part of the [tidyverse](https://www.tidyverse.org/) family of packages developed by the folks at RStudio).  
 * The '[DT](https://rstudio.github.io/DT/)' package will be used to display data frames as paged html tables.  
-* The '[httr](https://github.com/r-lib/httr)' package provides tools for working with URLs and HTTP.  
 ```{r}
 library(magrittr)
 # help(package="magrittr")
@@ -48,10 +50,12 @@ library(readr)
 # help(package="readr")
 library(readxl)
 # help(package="readxl")
+library(lubridate)
+# help(package="lubridate")
+library(ggplot2)
+# help(package="ggplot2")
 library(DT)
 # help(package="DT")
-library(httr)
-# help(package="httr")
 ```
 
 ### Read data from a local Excel file  
@@ -95,17 +99,33 @@ df.blueprint <- readr::read_csv(file=csv.file, col_names = TRUE, comment = "#")
 
 
 ### Loading data from the internet  
-The code below shows how to load data from an Excel file stored on the web.
-As an example we open the most recent Covid-19 stats from gov.uk:  
-```{r covid19}
-url.uk <- "https://www.arcgis.com/sharing/rest/content/items/e5fd11150d274bebaaf8fe2a7a2bda11/data"
-httr::GET(url.uk, httr::write_disk(tf <- tempfile(fileext = ".xlsx")))
-df.uk <- readxl::read_xlsx(tf) %>% 
-    dplyr::arrange(desc(DateVal)) %>% 
-    dplyr::mutate(Country = "United Kingdom") %>% 
-    dplyr::select(Country, Date = DateVal, Cases = CMODateCount, CumCases)
+The code below shows how to load data from a CSV file stored on the web.
+As an example we open the most recent Covid-19 stats from gov.uk.  
+```{r load covid19, message=FALSE}
+url.jh <- paste0("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/",
+                 "csse_covid_19_data/csse_covid_19_time_series/",
+                 "time_series_covid19_deaths_global.csv")
+df.jh.raw <- readr::read_csv(url.jh)
 ```
 
+Lets extract the UK data and display a graph (we'll discuss the code later):  
+```{r plot covid19}
+df.jh.processed <- df.jh.raw %>% 
+  dplyr::rename(Country="Country/Region") %>% 
+  dplyr::rename(Province="Province/State") %>% 
+  dplyr::filter(Country == "United Kingdom") %>% 
+  dplyr::filter(is.na(Province)) %>% 
+  dplyr::select(-Province, -Lat, -Long) %>% 
+  tidyr::pivot_longer(-Country, names_to = "Date", values_to = "Deaths") %>% 
+  dplyr::mutate(Date = lubridate::mdy(Date)) %>% 
+  dplyr::filter(Deaths > 0)
+
+gg <- ggplot2::ggplot(data=df.jh.processed, aes(x=Date, y=Deaths)) +
+  geom_line() + scale_y_log10() +
+  labs(title = "UK Deaths from Covid19",
+       subtitle = paste0("(Data: Johns Hopkins, ", max(df.jh.processed$Date), ")"))
+gg
+```
 
 
 ### Additional options for viewing the contents of a data frame  
