@@ -48,3 +48,14 @@ Alternatively, you can install packages using the RStudio `Tools > Install Packa
 6. Choose a desired folder in the "Create project as subdirectory of..." field  
 7. Click the "Create project" button  
 8. Open the first script ...
+
+## To create a copy of this repository in RStudio follow these steps:  
+
+1. if you haven't already done so, [install first R](https://www.r-project.org/), then [RStudio](https://rstudio.com/products/rstudio/download/) on your computer  
+2. Start RStudio  
+3. File menu > New project...  
+4. Choose: Version Control > Git  
+5. Paste the following address into the "Repository URL" field: https://github.com/nohturfft/r_workshop_2020_04_24  
+6. Press tab key ("Project directory name" field will be filled automatically)  
+7. Choose a desired folder in the "Create project as subdirectory of..." field  
+8. Click the "Create project" button  
