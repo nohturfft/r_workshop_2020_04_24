@@ -1,0 +1,182 @@
+---
+title: "R for Improvers (Script 2): Reshaping and summarising data frames"
+author: Axel Nohturfft (anohturf@sgul.ac.uk)
+date: "`r Sys.Date()`"
+output:
+  html_notebook:
+    code_folding: 'no'
+    fig_caption: yes
+    highlight: tango
+    number_sections: no
+    theme: sandstone
+    toc: yes
+    toc_depth: 3
+    toc_float: no
+---
+
+**_Please follow the instructions in the README file before starting this tutorial._**
+
+
+## Introduction: the 'tidy data' concept  
+A lot of effort during data analysis projects goes into shaping input data into a format that can then be analysed with standard tools, a process known as '[data wrangling](https://en.wikipedia.org/wiki/Data_wrangling)' or 'data munging'.  
+
+For example, the same exam results can be tabulated in the following two formats:  
+
+|           | Question_1 | Question_2 | Question_3 | Question_4 |
+|-----------|------------|------------|------------|------------|
+| Student_a | A          | C          | B          | E          |
+| Student_b | A          | B          | D          | E          |
+| Student_c | A          | C          | D          | B          |
+
+
+| Student | Question | Answer |
+|---------|----------|--------|
+| a       | 1        | A      |
+| a       | 2        | C      |
+| a       | 3        | B      |
+| a       | 4        | E      |
+| b       | 1        | A      |
+| b       | 2        | B      |
+| b       | 3        | D      |
+| b       | 4        | E      |
+| c       | 1        | A      |
+| c       | 2        | C      |
+| c       | 3        | D      |
+| c       | 4        | B      |
+
+The first table can be referred to as _**wide format**_, and the second version can be called the _**long format**_.  
+
+_The term **TIDY DATA** is used in reference to tables arranged in such a way that each row represents an individual sample, and each column represents a variable._  
+
+In the first table above the four question columns all contain the same type of data - students' answers to multiple choice questions. Plus, the row and column headers contain variables (student and question IDs); this table is *not* 'tidy'.  
+
+The data would have to be converted into the format of the second (long-format) table to be conveniently analysed.  
+
+A whole collection of R packages known as the [tidyverse](https://www.tidyverse.org/) are built around the tidy data concept ([Wickham, 2013](https://www.jstatsoft.org/index.php/jss/article/view/v059i10/v59i10.pdf)). These packages are very widely used in the R community.  
+
+## Objective  
+In this part of the workshop we will use two examples to illustrate how to convert data from a wide to a long (tidy) arrangement and how such data can then be summarised in tabular or graphical format.
+
+## Code  
+### Setup  
+```{r chunk options, include=FALSE}
+# setting rmarkdown options
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+```
+
+```{r clean up memory}
+# clear all variables that might be stored from a previous analysis:
+rm(list=ls(all=T))
+```
+
+```{r packages, message=FALSE}
+# load packages
+library(magrittr)
+# help(package="magrittr")
+library(readr)
+# help(package="readr")
+library(dplyr)
+# help(package="dplyr")
+library(tidyr)
+# help(package="tidyr")
+library(stringr)
+# help(package="stringr")
+library(ggplot2)
+# help(package="ggplot2")
+```
+
+### Time curve of phosphate data  
+*(Data kindly provided by Felix Effah)*
+Load the original data. If you check the CSV file in Excel, you will notice that the first column does not have a header, so R makes one up ("X1").
+```{r load phosphate}
+phosphate <- readr::read_csv("data/phosphate.csv")
+View(phosphate)
+```
+
+The first column contains just row numbers, so we can remove it:
+```{r}
+phosphate.2 <- phosphate %>% 
+  dplyr::select(-X1)
+View(phosphate.2)
+```
+
+The values in columns t0 to t5 all contain the same type of data - phosphate concentrations. Let's convert the table to a tidy (long) format using a function from the 'tidyr' package.
+```{r}
+phosphate.3 <- phosphate.2 %>% 
+  tidyr::pivot_longer(-group, names_to = "Time", values_to = "Phosphate")
+View(phosphate.3)
+```
+
+For easier inspection let's sort the data frame by group and time:  
+```{r}
+phosphate.4 <- phosphate.3 %>% 
+  dplyr::rename(Group = group) %>% 
+  dplyr::arrange(Group, Time)
+View(phosphate.4)
+```
+
+The letter 't' in the Time column is redundant and would prevent us from plotting the data on a numerical time axis. Next we remove the letter 't' and convert the column to numeric format:
+```{r}
+phosphate.5 <- phosphate.4 %>% 
+  dplyr::mutate(Time = stringr::str_remove(Time, "t")) %>% 
+  dplyr::mutate(Time = as.numeric(Time))
+View(phosphate.5)
+```
+
+Inspection of the data indicates that we have 20 replicates for each combination of group and time point.  
+We could illustrate the spread of the data as a boxplot:
+```{r phosphate boxplot}
+gg1 <- phosphate.5 %>% 
+  dplyr::mutate(Time = factor(Time, levels=sort(unique(phosphate.5$Time)))) %>% 
+  ggplot(aes(x=Time, y=Phosphate)) + geom_boxplot() + facet_wrap(~Group)
+gg1
+```
+
+Alternatively, one might want to calculate averages for each time point and display the data as a scatterplot.  
+In this case we first use the `group_by()` and `summarise()` functions from the tidyverse 'dplyr' package:  
+```{r phosphate scatterplot}
+phosphate.6 <- phosphate.5 %>% 
+  dplyr::group_by(Group, Time) %>% 
+  dplyr::summarise(Average = mean(Phosphate),
+                   SD = sd(Phosphate)) %>% 
+  dplyr::mutate(lower = Average - SD,
+                upper = Average + SD)
+# View(phosphate.6)
+dplyr::select(phosphate.6, -lower, -upper)
+```
+
+```{r}
+gg2 <- phosphate.6 %>% 
+  ggplot(aes(x=Time, y=Average, color=Group)) +
+  geom_line() +
+  # geom_errorbar(aes(ymin=lower, ymax=upper, width=0.1)) +
+  geom_point() +
+  labs(x="Time (min)",
+       y="Phosphate concentration (mM)")
+gg2
+```
+
+In "real life" one would have processed the phosphate data in one continuous chain of pipes:
+```{r message=FALSE, warning=FALSE}
+phosphate.x <- readr::read_csv("data/phosphate.csv") %>% 
+  dplyr::select(-X1) %>% 
+  tidyr::pivot_longer(-group, names_to = "Time", values_to = "Phosphate") %>% 
+  dplyr::rename(Group = group) %>% 
+  dplyr::arrange(Group, Time) %>% 
+  dplyr::mutate(Time = stringr::str_remove(Time, "t")) %>% 
+  dplyr::mutate(Time = as.numeric(Time))
+
+phosphate.summary <- phosphate.x %>% 
+  dplyr::group_by(Group, Time) %>% 
+  dplyr::summarise(Average = mean(Phosphate),
+                   SD = sd(Phosphate)) %>% 
+  dplyr::mutate(lower = Average - SD,
+                upper = Average + SD)
+```
+
+## Session info  
+```{r}
+sessionInfo()
+```
+
+
