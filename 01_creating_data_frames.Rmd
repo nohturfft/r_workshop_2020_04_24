@@ -39,7 +39,8 @@ R packages provide additional functions/commands.
 * We'll use functions from the '[readr](https://readr.tidyverse.org/)' package to open CSV and TSV files  
 * We'll use a function from the '[readxl](https://readxl.tidyverse.org/)' package to load data from an Excel file  
 * (All three of the above packages are part of the [tidyverse](https://www.tidyverse.org/) family of packages developed by the folks at RStudio).  
-* The '[DT](https://rstudio.github.io/DT/)' package will be used to display data frames as paged html tables  
+* The '[DT](https://rstudio.github.io/DT/)' package will be used to display data frames as paged html tables.  
+* The '[httr](https://github.com/r-lib/httr)' package provides tools for working with URLs and HTTP.  
 ```{r}
 library(magrittr)
 # help(package="magrittr")
@@ -49,6 +50,8 @@ library(readxl)
 # help(package="readxl")
 library(DT)
 # help(package="DT")
+library(httr)
+# help(package="httr")
 ```
 
 ### Read data from a local Excel file  
@@ -63,10 +66,14 @@ df.pcr <- readxl::read_xlsx(path=xl.file, sheet="Sheet1", col_names = T, range =
 # If you get a strange error, make sure no rows or columns are hidden in the Excel file
 ```
 
+To view the contents of the newly created data frame click on 'df.pcr' in the RStudio Environment window. If you then look at the console, you will see that RStudio responded by running the `View(df.pcr)` command. You can copy and paste that into your script if you would like to do this computationally in the future. Note that this output would not appear in the markdown output.  
+
 ### Read data from a local tsv file  
 * TSV stands for 'tab-separated values'.  
 * Such files often just have a '.txt' extension.  
 * Here, we read a TSV file with a set of results from a multiple-choice exam  
+* If you open the file in Word or Excel, you woud see that the first few lines are comments preceded by hash (#) characters. The `comment="#"` argument in the `read_tsv()` call below tells R to ignore these lines.  
+* The `col_names=TRUE` argument indicates that the first line of the table represents column headers, not data.  
 
 ```{r open tsv, message=FALSE}
 tsv.file <- "data/OSPE_Results_Raw.tsv"
@@ -74,7 +81,6 @@ stopifnot(file.exists(tsv.file))
 df.results <- readr::read_tsv(file=tsv.file, col_names = TRUE, comment = "#")
 ```
 
-To view the contents of the newly created data frame click on 'df.blueprint' in the RStudio Environment window. If you then look at the console, you will see that RStudio responded by running the `View(df.blueprint)` command. You can copy and paste that into your script if you would like to do this computationally in the future. Note that this output would not appear in the markdown output.  
 
 ### Read data from a local csv file  
 
@@ -88,12 +94,40 @@ df.blueprint <- readr::read_csv(file=csv.file, col_names = TRUE, comment = "#")
 ```
 
 
+### Loading data from the internet  
+The code below shows how to load data from an Excel file stored on the web.
+As an example we open the most recent Covid-19 stats from gov.uk:  
+```{r covid19}
+url.uk <- "https://www.arcgis.com/sharing/rest/content/items/e5fd11150d274bebaaf8fe2a7a2bda11/data"
+httr::GET(url.uk, httr::write_disk(tf <- tempfile(fileext = ".xlsx")))
+df.uk <- readxl::read_xlsx(tf) %>% 
+    dplyr::arrange(desc(DateVal)) %>% 
+    dplyr::mutate(Country = "United Kingdom") %>% 
+    dplyr::select(Country, Date = DateVal, Cases = CMODateCount, CumCases)
+```
+
+
+
 ### Additional options for viewing the contents of a data frame  
 To display the blueprint table in the html output there are a number of options.  
 The simplest is to use the `print()` command:
 ```{r print blueprint}
 print(df.blueprint)
 ```
+
+To have a quick look at the first few rows of a data frame, use `head()`:  
+```{r head command}
+# By default head() prints 6 lines
+# Use head(df.results, n) to print n lines instead
+head(df.results)
+```
+
+For the last few lines use `tail()`:  
+```{r tail command}
+n <- 4
+tail(df.results, n)
+```
+
 
 There are a number of packages that allow you to generate very snazzy html tables.  
 My favourite is usually the `datatable` function from the DT package:  
