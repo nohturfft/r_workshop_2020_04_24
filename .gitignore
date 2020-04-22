@@ -5,3 +5,6 @@
 
 **/*.html
 .DS_Store
+
+extras/**
+info/**
