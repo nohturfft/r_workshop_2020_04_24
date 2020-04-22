@@ -188,7 +188,7 @@ The 'dplyr' package also provides a number of join function that work well with 
 
 Here, let's go back to our exam files from the first script...  
 
-#### Step 1: Load the blueprint file and select the relevant columns with correct answers  
+#### Step 1: Load the blueprint file and select the relevant columns  
 ```{r open blueprint, message=FALSE}
 csv.file <- "data/OSPE_Blueprint.csv"
 stopifnot(file.exists(csv.file))
@@ -205,9 +205,9 @@ df.results <- readr::read_tsv(file=tsv.file, col_names = TRUE, comment = "#")
 print(df.results)
 ```
 
-#### Step 3: Reshape student answer into 'tidy' (long) format  
+#### Step 3: Reshape student answers into 'tidy' (long) format  
 ```{r}
-results.long <- tidyr::pivot_longer(df.results, -Cand.No,names_to = "Question", values_to = "Answer")
+results.long <- tidyr::pivot_longer(df.results, -Cand.No, names_to = "Question", values_to = "Answer")
 print(results.long)
 ```
 
@@ -222,7 +222,7 @@ print(df.merged)
 #### Step 5: "Mark" the answers  
 ```{r}
 df.marked <- df.merged %>% 
-  dplyr::mutate(Answer_Correct = Answer == Correct_Answer)
+  dplyr::mutate(Answer_Correct = (Answer == Correct_Answer))
 print(df.marked)
 ```
 
@@ -231,6 +231,7 @@ print(df.marked)
 
 (1) Using the `df.marked` data above, calculate a percentage mark for each student (Cand.No).  
 (2) Calculate the percent facility for each of the five exam questions (percentage of students who got the answer right).
+
 
 ## Session info  
 ```{r}
