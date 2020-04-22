@@ -1,0 +1,138 @@
+---
+title: "R for Improvers: Creating, reading and writing data frames"
+author: Axel Nohturfft (anohturf@sgul.ac.uk)
+date: "`r Sys.Date()`"
+output:
+  html_notebook:
+    code_folding: 'no'
+    fig_caption: yes
+    highlight: tango
+    number_sections: no
+    theme: sandstone
+    toc: yes
+    toc_depth: 3
+    toc_float: no
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+**_Please follow the instructions in the README file before starting this tutorial._**
+
+
+## Introduction  
+
+* Data frames are the most common data structure used in R.  
+* They are essentiall similar to an Excel table, except that in a given column each value has to be of the same data type (e.g. character/text, numeric, logical/boolean). But different columns in one data frame can be of a different type.  
+* In R a data frame is similar to a _**matrix**_ but in a matrix all data have to be the same type.  
+* Generally, data frames are created when opening for example Excel or CSV files or when loading tabular data from the internet.  
+* In this script we will go through some examples.  
+
+## Code  
+
+### Load packages  
+R packages provide additional functions/commands.  
+
+* The '[magrittr](https://cran.r-project.org/web/packages/magrittr/vignettes/magrittr.html)' package provides pipes (%>%) that allow us to send the output from one command to the next  
+* We'll use functions from the '[readr](https://readr.tidyverse.org/)' package to open CSV and TSV files  
+* We'll use a function from the '[readxl](https://readxl.tidyverse.org/)' package to load data from an Excel file  
+* (All three of the above packages are part of the [tidyverse](https://www.tidyverse.org/) family of packages developed by the folks at RStudio).  
+* The '[DT](https://rstudio.github.io/DT/)' package will be used to display data frames as paged html tables  
+```{r}
+library(magrittr)
+# help(package="magrittr")
+library(readr)
+# help(package="readr")
+library(readxl)
+# help(package="readxl")
+library(DT)
+# help(package="DT")
+```
+
+### Read data from a local Excel file  
+* Here we use a function from the tidyverse 'readxl' package.  
+* The 'openxlsx' package is also a good option.  
+* The file is stored in a project sub-directory called 'data' (see RStudio Files window/tab)  
+
+```{r open xl}
+xl.file <- "data/qPCR_Cq_Results.xlsx"
+stopifnot(file.exists(xl.file))
+df.pcr <- readxl::read_xlsx(path=xl.file, sheet="Sheet1", col_names = T, range = "D1:H9")
+# If you get a strange error, make sure no rows or columns are hidden in the Excel file
+```
+
+### Read data from a local tsv file  
+* TSV stands for 'tab-separated values'.  
+* Such files often just have a '.txt' extension.  
+* Here, we read a TSV file with a set of results from a multiple-choice exam  
+
+```{r open tsv, message=FALSE}
+tsv.file <- "data/OSPE_Results_Raw.tsv"
+stopifnot(file.exists(tsv.file))
+df.results <- readr::read_tsv(file=tsv.file, col_names = TRUE, comment = "#")
+```
+
+To view the contents of the newly created data frame click on 'df.blueprint' in the RStudio Environment window. If you then look at the console, you will see that RStudio responded by running the `View(df.blueprint)` command. You can copy and paste that into your script if you would like to do this computationally in the future. Note that this output would not appear in the markdown output.  
+
+### Read data from a local csv file  
+
+* CSV stands for 'comma-separated values'.  
+* Here, we open a file that lists the correct answers for a few questions from a multiple-choice exam
+
+```{r open csv, message=FALSE}
+csv.file <- "data/OSPE_Blueprint.csv"
+stopifnot(file.exists(csv.file))
+df.blueprint <- readr::read_csv(file=csv.file, col_names = TRUE, comment = "#")
+```
+
+
+### Additional options for viewing the contents of a data frame  
+To display the blueprint table in the html output there are a number of options.  
+The simplest is to use the `print()` command:
+```{r print blueprint}
+print(df.blueprint)
+```
+
+There are a number of packages that allow you to generate very snazzy html tables.  
+My favourite is usually the `datatable` function from the DT package:  
+
+* long tables are paged  
+* tables are searchable  
+* you can choose how man rows to show on one 'page'  
+* there is an option to add hyperlinks to table text  
+* the package provides a very large number of customization options  
+* run `help(package="DT")` for access to more information  
+```{r}
+DT::datatable(df.blueprint)
+```
+
+I encourage you to also check out the following packages that display information-rich, attractive html tables from Rmarkdown:  
+
+* [formattable](https://github.com/renkun-ken/formattable)  
+* [kable + kableExtra](http://haozhu233.github.io/kableExtra/awesome_table_in_html.html)  
+* [htmlTable](https://github.com/gforge/htmlTable)  
+
+### Dimensions of a data frame  
+For both number of rows and columns use `dim()`.  
+```{r}
+dim(df.blueprint)
+```
+
+For number of rows use `nrow()`  
+```{r}
+nrow(df.blueprint)
+```
+
+For number of columns use `ncol()`  
+```{r}
+ncol(df.blueprint)
+```
+
+## Session info  
+```{r}
+sessionInfo()
+```
+
+
