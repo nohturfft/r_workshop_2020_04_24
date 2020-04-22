@@ -207,6 +207,18 @@ write.table(mtcars, file="mtcars.tsv", sep="\t", row.names = FALSE, col.names = 
 list.files(pattern="mtcars.*")
 ```
 
+When working with very large datasets that can be slow to load it is sometimes useful to save R objects (such as data frames, or any other object) in its native (Rdata or RDS) format. The data can also be compressed. Such files load much faster than the corresponding text or Excel files.  
+
+```{r}
+saveRDS(object = mtcars, file = "mtcars.rds", compress = "bzip2")
+list.files(pattern="mtcars.*")
+```
+
+```{r}
+x <- readRDS(file = "mtcars.rds")
+print(x[,1:4])
+```
+
 
 
 ## Session info  
