@@ -1,5 +1,5 @@
 ---
-title: "R for Improvers: Creating, reading and writing data frames"
+title: "R for Improvers (Script 1): Creating, reading and writing data frames"
 author: Axel Nohturfft (anohturf@sgul.ac.uk)
 date: "`r Sys.Date()`"
 output:
@@ -31,6 +31,10 @@ knitr::opts_chunk$set(echo = TRUE)
 * In this script we will go through some examples.  
 
 ## Code  
+```{r clean up memory}
+# clear all variables that might be stored from a previous analysis:
+rm(list=ls(all=T))
+```
 
 ### Load packages  
 R packages provide additional functions/commands.  
