@@ -193,6 +193,22 @@ For number of columns use `ncol()`
 ncol(df.blueprint)
 ```
 
+### Saving a data frame  
+To save a data frame as a text file, either in comma-delimited (CSV) or tab-delimited (TSV) format, use the `write.table()` command:  
+
+```{r write CSV}
+# mtcars is a data frame that comes with R
+write.table(mtcars, file="mtcars.csv", sep=",", row.names = FALSE, col.names = TRUE)
+list.files(pattern=".*csv")
+```
+
+```{r write TSV}
+write.table(mtcars, file="mtcars.tsv", sep="\t", row.names = FALSE, col.names = TRUE)
+list.files(pattern="mtcars.*")
+```
+
+
+
 ## Session info  
 ```{r}
 sessionInfo()
