@@ -88,6 +88,7 @@ library(ggplot2)
 ### Time curve of phosphate data  
 *(Data kindly provided by Felix Effah)*
 Load the original data. If you check the CSV file in Excel, you will notice that the first column does not have a header, so R makes one up ("X1").
+
 ```{r load phosphate}
 phosphate <- readr::read_csv("data/phosphate.csv")
 View(phosphate)
