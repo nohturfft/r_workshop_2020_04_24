@@ -86,26 +86,29 @@ library(ggplot2)
 ```
 
 ### Time curve of phosphate data  
-*(Data kindly provided by Felix Effah)*
+*(Data kindly provided by Felix Effah)*  
 Load the original data. If you check the CSV file in Excel, you will notice that the first column does not have a header, so R makes one up ("X1").
 
-```{r load phosphate}
+```{r load phosphate, message=FALSE, warning=FALSE}
 phosphate <- readr::read_csv("data/phosphate.csv")
-View(phosphate)
+# View(phosphate)
+print(phosphate)
 ```
 
 The first column contains just row numbers, so we can remove it:
 ```{r}
 phosphate.2 <- phosphate %>% 
   dplyr::select(-X1)
-View(phosphate.2)
+# View(phosphate.2)
+print(phosphate.2)
 ```
 
-The values in columns t0 to t5 all contain the same type of data - phosphate concentrations. Let's convert the table to a tidy (long) format using a function from the 'tidyr' package.
+The values in columns t0 to t5 all contain the same type of data - phosphate concentrations. Let's convert the table to a tidy (long) format using the `pivot_longer()` function from the '[tidyr](https://tidyr.tidyverse.org/)' package.
 ```{r}
 phosphate.3 <- phosphate.2 %>% 
   tidyr::pivot_longer(-group, names_to = "Time", values_to = "Phosphate")
-View(phosphate.3)
+# View(phosphate.3)
+print(phosphate.3)
 ```
 
 For easier inspection let's sort the data frame by group and time:  
@@ -113,7 +116,8 @@ For easier inspection let's sort the data frame by group and time:
 phosphate.4 <- phosphate.3 %>% 
   dplyr::rename(Group = group) %>% 
   dplyr::arrange(Group, Time)
-View(phosphate.4)
+# View(phosphate.4)
+print(phosphate.4)
 ```
 
 The letter 't' in the Time column is redundant and would prevent us from plotting the data on a numerical time axis. Next we remove the letter 't' and convert the column to numeric format:
@@ -121,7 +125,8 @@ The letter 't' in the Time column is redundant and would prevent us from plottin
 phosphate.5 <- phosphate.4 %>% 
   dplyr::mutate(Time = stringr::str_remove(Time, "t")) %>% 
   dplyr::mutate(Time = as.numeric(Time))
-View(phosphate.5)
+# View(phosphate.5)
+print(phosphate.5)
 ```
 
 Inspection of the data indicates that we have 20 replicates for each combination of group and time point.  
@@ -174,6 +179,58 @@ phosphate.summary <- phosphate.x %>%
   dplyr::mutate(lower = Average - SD,
                 upper = Average + SD)
 ```
+
+### Merging / joining data frames  
+A very common task. One example would be to have two tables: one with gene symbols and expression data, and another with the gene symbols and gene names - your goal would be to add the gene names to expression data.  
+In general programming parlance people refer to this as performing a _**join**_.  
+The function we use in base R is `merge()`.  
+The 'dplyr' package also provides a number of join function that work well with magrittr pipes and other tidyverse functions.  
+
+Here, let's go back to our exam files from the first script...  
+
+#### Step 1: Load the blueprint file and select the relevant columns with correct answers  
+```{r open blueprint, message=FALSE}
+csv.file <- "data/OSPE_Blueprint.csv"
+stopifnot(file.exists(csv.file))
+df.blueprint <- readr::read_csv(file=csv.file, col_names = TRUE, comment = "#") %>% 
+  dplyr::select(Question, Correct_Answer)
+print(df.blueprint)
+```
+
+#### Step 2: Load the file with the student answers
+```{r open tsv, message=FALSE}
+tsv.file <- "data/OSPE_Results_Raw.tsv"
+stopifnot(file.exists(tsv.file))
+df.results <- readr::read_tsv(file=tsv.file, col_names = TRUE, comment = "#")
+print(df.results)
+```
+
+#### Step 3: Reshape student answer into 'tidy' (long) format  
+```{r}
+results.long <- tidyr::pivot_longer(df.results, -Cand.No,names_to = "Question", values_to = "Answer")
+print(results.long)
+```
+
+#### Step 4: Merge results and blueprint  
+```{r}
+df.merged <- merge(x=results.long, y=df.blueprint, by="Question") %>% 
+  dplyr::select(Cand.No, everything()) %>% 
+  dplyr::arrange(Cand.No, Question)
+print(df.merged)
+```
+
+#### Step 5: "Mark" the answers  
+```{r}
+df.marked <- df.merged %>% 
+  dplyr::mutate(Answer_Correct = Answer == Correct_Answer)
+print(df.marked)
+```
+
+
+## EXERCISE  
+
+(1) Using the `df.marked` data above, calculate a percentage mark for each student (Cand.No).  
+(2) Calculate the percent facility for each of the five exam questions (percentage of students who got the answer right).
 
 ## Session info  
 ```{r}
