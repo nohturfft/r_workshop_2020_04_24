@@ -218,8 +218,11 @@ phosphate.summary <- phosphate.x %>%
 
 ## EXERCISE  
 
-(1) Using the `df.marked` data above, calculate a percentage mark for each student (Cand.No).  
-(2) Calculate the percent facility for each of the five exam questions (percentage of students who got the answer right).  
+The file data/SAQ_Exam_Results.csv contains the results of an SAQ exam with 6 questions for 4 students.  
+Each question was worth a maximum of 5 points.  
+
+(1) Calculate a percentage mark for each student (Cand.No)  
+(2) Calculate the average percent facility for each of the six exam questions (average percentage mark).  
 
 
 ## Session info  
