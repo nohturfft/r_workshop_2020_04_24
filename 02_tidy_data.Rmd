@@ -147,11 +147,13 @@ Example illustrating `is.na()` function:
 ```{r}
 # Define a vector:
 v <- c(1, NA, 5, 6, 0, NA)
+# Which of the values are NA ?
 is.na(v)
 ```
 
 Inserting an exclamation mark (!) means NOT and will invert the boolean values:
 ```{r}
+# Which of the values are NOT NA ?
 !is.na(v)
 ```
 
