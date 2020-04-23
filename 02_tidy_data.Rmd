@@ -26,6 +26,7 @@ output:
     * Sort data frames: `dplyr::arrange()`  
     * Modify or add columns: `dplyr::mutate`  
     * Selecting rows based on specific criteria: `dplyr::filter()`
+  
 
 (3) Cleaning: we will look at an example of how to remove rows with missing data points using the `tidyr::drop_na()` function.  
 (4) We will show how to perform summary calculations on specific groups of rows within a data frame (`dplyr::group_by` and `dplyr::summarise` functions)
@@ -164,8 +165,10 @@ print(phosphate.6)
 
 ### Step 6: Draw a boxplot  
 Inspection of the data indicates that we have 20 replicates for each combination of group and time point.  
-We could illustrate the spread of the data as a boxplot (keeping n mind that boxplots for for categorical x values):
+We could illustrate the spread of the data as a boxplot (keeping in mind that boxplots are for categorical x values):
 ```{r phosphate boxplot}
+# To allow ggplot creating a boxplot with time on the x-axis, the Time column has to be
+# converted back to a specific text format, called 'factor':
 gg1 <- phosphate.6 %>% 
   dplyr::mutate(Time = factor(Time, levels=sort(unique(phosphate.6$Time)))) %>% 
   ggplot(aes(x=Time, y=Phosphate)) + geom_boxplot() + facet_wrap(~Group)
@@ -174,7 +177,9 @@ gg1
 
 ### Step 7: Draw a scatterplot  
 Alternatively, one might want to calculate averages for each time point and display the data as a scatterplot.  
-In this case we first use the `group_by()` and `summarise()` functions from the tidyverse 'dplyr' package:  
+In this case we first use the `group_by()` and `summarise()` functions from the tidyverse 'dplyr' package.  
+The way this works is that, effectively, dplyr splits the input into a series of smaller data frames as specified in the `group_by()` arguments; the `summarise()` function then calculates statistics on each of the data frame 'chunks' before putting it all together in one output:  
+
 ```{r phosphate scatterplot}
 phosphate.7 <- phosphate.6 %>% 
   dplyr::group_by(Group, Time) %>% 
