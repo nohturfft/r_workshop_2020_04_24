@@ -54,8 +54,10 @@ The data would have to be converted into the format of the second (long-format) 
 
 A whole collection of R packages known as the [tidyverse](https://www.tidyverse.org/) are built around the tidy data concept ([Wickham, 2013](https://www.jstatsoft.org/index.php/jss/article/view/v059i10/v59i10.pdf)). These packages are very widely used in the R community.  
 
-## Objective  
-In this part of the workshop we will use two examples to illustrate how to convert data from a wide to a long (tidy) arrangement and how such data can then be summarised in tabular or graphical format.
+## Objectives  
+
+(1) In this part of the workshop we will use two examples to illustrate how to convert data from a wide to a long (tidy) arrangement and how such data can then be summarised in tabular or graphical format.  
+(2) Along the way we will use some functions from the 'dplyr' package to manipulate data frames  
 
 ## Code  
 ### Setup  
@@ -165,6 +167,7 @@ phosphate.6 <- phosphate.5 %>%
 print(phosphate.6)
 ```
 
+(notice how the new table now has only 259 instead of 264 rows)  
 
 #### Step 6: Draw a boxplot  
 Inspection of the data indicates that we have 20 replicates for each combination of group and time point.  
@@ -209,7 +212,8 @@ phosphate.x <- readr::read_csv("data/phosphate_b.csv") %>%
   dplyr::rename(Group = group) %>% 
   dplyr::arrange(Group, Time) %>% 
   dplyr::mutate(Time = stringr::str_remove(Time, "t")) %>% 
-  dplyr::mutate(Time = as.numeric(Time))
+  dplyr::mutate(Time = as.numeric(Time)) %>% 
+  dplyr::filter(!is.na(Phosphate))
 
 phosphate.summary <- phosphate.x %>% 
   dplyr::group_by(Group, Time) %>% 
