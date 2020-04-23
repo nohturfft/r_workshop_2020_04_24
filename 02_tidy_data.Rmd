@@ -181,10 +181,11 @@ phosphate.summary <- phosphate.x %>%
 ```
 
 ### Merging / joining data frames  
-A very common task. One example would be to have two tables: one with gene symbols and expression data, and another with the gene symbols and gene names - your goal would be to add the gene names to expression data.  
-In general programming parlance people refer to this as performing a _**join**_.  
-The function we use in base R is `merge()`.  
-The 'dplyr' package also provides a number of join function that work well with magrittr pipes and other tidyverse functions.  
+
+* A very common task. One example would be to have two tables: one with gene symbols and expression data, and another with the gene symbols and gene names - your goal would be to add the gene names to expression data.  
+* In general programming parlance people refer to this manipulation as performing a _**join**_.  
+* The function we use in base R is `merge()`.  
+* The 'dplyr' package also provides a number of join function that work well with magrittr pipes and other tidyverse functions.  
 
 Here, let's go back to our exam files from the first script...  
 
@@ -197,7 +198,12 @@ df.blueprint <- readr::read_csv(file=csv.file, col_names = TRUE, comment = "#") 
 print(df.blueprint)
 ```
 
-#### Step 2: Load the file with the student answers
+#### Step 2: Load the file with the student answers  
+
+* __Note__  
+* that the answer data include a question/column (OSPE6) for which there is no match in the blueprint table loaded above.  
+* and that the blueprint data included a question (OSPE5) for which there is no match in the results table.  
+
 ```{r open tsv, message=FALSE}
 tsv.file <- "data/OSPE_Results_Raw.tsv"
 stopifnot(file.exists(tsv.file))
@@ -213,10 +219,46 @@ print(results.long)
 
 #### Step 4: Merge results and blueprint  
 ```{r}
-df.merged <- merge(x=results.long, y=df.blueprint, by="Question") %>% 
+df.merged <- merge(x=results.long, y=df.blueprint, by="Question", all.x=FALSE, all.y=FALSE) %>% 
   dplyr::select(Cand.No, everything()) %>% 
-  dplyr::arrange(Cand.No, Question)
+  dplyr::arrange(Cand.No, desc(Question))
 print(df.merged)
+```
+
+**Note that the merged table above contains no rows for OSPE5 or OSPE6.** By default, the `merge()` function will only include data for which it finds matches in *both* tables. This is also called an **INNER JOIN**. Decisions as to whether include all rows from one or both input tables is set by the `all.x` and `all.y` arguments to the `merge()` function.  
+
+To illustrate the different options, let's focus on just one of the candidates (1001):  
+
+**INNER JOIN** - Include only matches from both tables:
+```{r}
+merge(x=results.long, y=df.blueprint, by="Question", all.x=FALSE, all.y=FALSE) %>% 
+  dplyr::select(Cand.No, everything()) %>% 
+  dplyr::filter(Cand.No == 1001) %>% 
+  dplyr::arrange(Question)
+```
+
+**LEFT JOIN** - Include all data from table 1 (`all.x=TRUE`), only matching rows from table 2 (`all.y=FALSE`):
+```{r}
+merge(x=results.long, y=df.blueprint, by="Question", all.x=TRUE, all.y=FALSE) %>% 
+  dplyr::select(Cand.No, everything()) %>% 
+  dplyr::filter(Cand.No == 1001) %>% 
+  dplyr::arrange(Question)
+```
+
+**RIGHT JOIN** - Include all data from table 2 (`all.y=TRUE`), only matching rows from table 1 (`all.x=FALSE`):
+```{r}
+merge(x=results.long, y=df.blueprint, by="Question", all.x=FALSE, all.y=TRUE) %>% 
+  dplyr::select(Cand.No, everything()) %>% 
+  dplyr::filter(Cand.No %in% c(1001, NA)) %>%
+  dplyr::arrange(Question)
+```
+
+**OUTER JOIN** - Include all data from table 1 (`all.x=TRUE`), and all data from table 2 (`all.y=TRUE`):
+```{r}
+merge(x=results.long, y=df.blueprint, by="Question", all.x=TRUE, all.y=TRUE) %>% 
+  dplyr::select(Cand.No, everything()) %>% 
+  dplyr::filter(Cand.No %in% c(1001, NA)) %>%
+  dplyr::arrange(Question)
 ```
 
 #### Step 5: "Mark" the answers  
@@ -230,7 +272,7 @@ print(df.marked)
 ## EXERCISE  
 
 (1) Using the `df.marked` data above, calculate a percentage mark for each student (Cand.No).  
-(2) Calculate the percent facility for each of the five exam questions (percentage of students who got the answer right).
+(2) Calculate the percent facility for each of the five exam questions (percentage of students who got the answer right).  
 
 
 ## Session info  
