@@ -109,7 +109,8 @@ df.blueprint <- readr::read_csv(file=csv.file, col_names = TRUE, comment = "#")
 
 ### Loading data from the internet  
 The code below shows how to load data from a CSV file stored on the web.
-As an example we open the most recent Covid-19 stats from gov.uk.  
+As an example we open the most recent Covid-19 stats from Johns Hopkins.  
+All we have to do is use the internet file URL instead of a local file path as argument to the `read_csv()` function.
 ```{r load covid19, message=FALSE}
 url.jh <- paste0("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/master/",
                  "csse_covid_19_data/csse_covid_19_time_series/",
@@ -117,7 +118,7 @@ url.jh <- paste0("https://raw.githubusercontent.com/CSSEGISandData/COVID-19/mast
 df.jh.raw <- readr::read_csv(url.jh)
 ```
 
-Lets extract the UK data and display a graph (we'll discuss the code later):  
+Lets extract the UK data and display a graph (we'll discuss the dplyr functions later):  
 ```{r plot covid19}
 df.jh.processed <- df.jh.raw %>% 
   dplyr::rename(Country="Country/Region") %>% 
@@ -219,6 +220,23 @@ x <- readRDS(file = "mtcars.rds")
 print(x[,1:4])
 ```
 
+## Summaries of data frames  
+```{r message=FALSE}
+str(OrchardSprays)
+```
+
+```{r}
+str(df.results)
+```
+
+```{r}
+str(df.blueprint)
+```
+
+
+```{r}
+summary(OrchardSprays)
+```
 
 
 ## Session info  
