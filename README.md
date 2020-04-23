@@ -19,10 +19,16 @@ St. George's University of London
 1. This will be a beginners/improvers workshop that builds on a [previous beginners workshop](https://github.com/nohturfft/r_workshop_2019_11_29) held in November last year. You are strongly encouraged to briefly review the material covered during the previous workshop.  
 2. We will be working with scripts written in [Rmarkdown](https://rmarkdown.rstudio.com/); you might find it useful to familiarise yourself with this format if you haven't used it before. Consider downloading the [Rmarkdown cheat sheet](https://rstudio.com/wp-content/uploads/2015/02/rmarkdown-cheatsheet.pdf) as a handy reference.  
 
-
-### Install R and RStudio  
+### Installing R and RStudio  
 
 If you haven't already done so, [install first R](https://www.r-project.org/), then [RStudio](https://rstudio.com/products/rstudio/download/) on your computer. That way you can try out the code we'll cover during the practice breaks. Of course, you may choose to just follow the presentation.  
+
+### Accessing R/Rstudio Server  
+
+If you prefer to access RStudio Server online, please go to [https://stats3.sgul.ac.uk/rstudio/](https://stats3.sgul.ac.uk/rstudio/).  
+Note that you will need a good amount of disk space allowance for your H drive.  
+You might need to first connect to the university's VPN or open the tool on [mydesktop](mydesktop.sgul.ac.uk).  
+
 
 ### Install packages  
 
