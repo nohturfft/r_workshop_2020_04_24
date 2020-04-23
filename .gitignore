@@ -3,9 +3,10 @@
 .RData
 .Ruserdata
 
-**/*html
+*html
 .DS_Store
 
 extras/**
 info/**
 
+html
