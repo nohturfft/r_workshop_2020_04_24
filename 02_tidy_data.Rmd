@@ -1,5 +1,5 @@
 ---
-title: "R for Improvers (Script 2): Reshaping and summarising data frames"
+title: "R for Improvers (Script 2): Reshaping, cleaning and summarising data frames"
 author: Axel Nohturfft (anohturf@sgul.ac.uk)
 date: "`r Sys.Date()`"
 output:
@@ -86,16 +86,20 @@ library(ggplot2)
 ```
 
 ### Time curve of phosphate data  
-*(Data kindly provided by Felix Effah)*  
-Load the original data. If you check the CSV file in Excel, you will notice that the first column does not have a header, so R makes one up ("X1").
+*(Original data kindly provided by Felix Effah)*  
+
+#### Step 1: Load the original data.
+
+* If you check the CSV file in Excel, you will notice that the first column does not have a header, so R makes one up ("X1").  
+* Also notice that some data are missing at t0.5 and t1. R inserted NA instead.  
 
 ```{r load phosphate, message=FALSE, warning=FALSE}
-phosphate <- readr::read_csv("data/phosphate.csv")
+phosphate <- readr::read_csv("data/phosphate_b.csv")
 # View(phosphate)
 print(phosphate)
 ```
 
-The first column contains just row numbers, so we can remove it:
+#### Step 2: The first column contains just row numbers, so we can remove it:
 ```{r}
 phosphate.2 <- phosphate %>% 
   dplyr::select(-X1)
@@ -103,7 +107,7 @@ phosphate.2 <- phosphate %>%
 print(phosphate.2)
 ```
 
-The values in columns t0 to t5 all contain the same type of data - phosphate concentrations. Let's convert the table to a tidy (long) format using the `pivot_longer()` function from the '[tidyr](https://tidyr.tidyverse.org/)' package.
+#### Step 3: The values in columns t0 to t5 all contain the same type of data - phosphate concentrations. Let's convert the table to a tidy (long) format using the `pivot_longer()` function from the '[tidyr](https://tidyr.tidyverse.org/)' package.
 ```{r}
 phosphate.3 <- phosphate.2 %>% 
   tidyr::pivot_longer(-group, names_to = "Time", values_to = "Phosphate")
@@ -111,7 +115,7 @@ phosphate.3 <- phosphate.2 %>%
 print(phosphate.3)
 ```
 
-For easier inspection let's sort the data frame by group and time:  
+#### Step 3: For easier inspection let's sort the data frame by group and time:  
 ```{r}
 phosphate.4 <- phosphate.3 %>% 
   dplyr::rename(Group = group) %>% 
@@ -120,7 +124,10 @@ phosphate.4 <- phosphate.3 %>%
 print(phosphate.4)
 ```
 
-The letter 't' in the Time column is redundant and would prevent us from plotting the data on a numerical time axis. Next we remove the letter 't' and convert the column to numeric format:
+#### Step 4: Fix the format of the Time column  
+The letter 't' in the Time column is redundant and would prevent us from plotting the data on a numerical time axis. We remove the letter 't' and convert the column to numeric format:  
+(The 'stringr' package includes a whole host of useful function to manipulate text.)  
+
 ```{r}
 phosphate.5 <- phosphate.4 %>% 
   dplyr::mutate(Time = stringr::str_remove(Time, "t")) %>% 
@@ -129,30 +136,60 @@ phosphate.5 <- phosphate.4 %>%
 print(phosphate.5)
 ```
 
+#### Step 5: Cleaning the table  
+As noted earlier, the table includes a number of rows with missing data. Let's remove these rows.  
+
+* There are different ways to accomplish this task. One approach using base R would be to use the `complete.cases()` function.  
+* Here, we'll use `dplyr::filter()` in combination with the `is.na()` function.  
+* `is.na()` returns a vector of boolean/logical values indicating whether or not the items of an input vector are NA or not.  
+
+Example illustrating `is.na()` function:
+```{r}
+# Define a vector:
+v <- c(1, NA, 5, 6, 0, NA)
+is.na(v)
+```
+
+Inserting an exclamation mark (!) means NOT and will invert the boolean values:
+```{r}
+!is.na(v)
+```
+
+
+```{r}
+phosphate.6 <- phosphate.5 %>% 
+  dplyr::filter(!is.na(Phosphate))
+# View(phosphate.6)
+print(phosphate.6)
+```
+
+
+#### Step 6: Draw a boxplot  
 Inspection of the data indicates that we have 20 replicates for each combination of group and time point.  
-We could illustrate the spread of the data as a boxplot:
+We could illustrate the spread of the data as a boxplot (keeping n mind that boxplots for for categorical x values):
 ```{r phosphate boxplot}
-gg1 <- phosphate.5 %>% 
-  dplyr::mutate(Time = factor(Time, levels=sort(unique(phosphate.5$Time)))) %>% 
+gg1 <- phosphate.6 %>% 
+  dplyr::mutate(Time = factor(Time, levels=sort(unique(phosphate.6$Time)))) %>% 
   ggplot(aes(x=Time, y=Phosphate)) + geom_boxplot() + facet_wrap(~Group)
 gg1
 ```
 
+#### Step 7: Draw a scatterplot  
 Alternatively, one might want to calculate averages for each time point and display the data as a scatterplot.  
 In this case we first use the `group_by()` and `summarise()` functions from the tidyverse 'dplyr' package:  
 ```{r phosphate scatterplot}
-phosphate.6 <- phosphate.5 %>% 
+phosphate.7 <- phosphate.6 %>% 
   dplyr::group_by(Group, Time) %>% 
   dplyr::summarise(Average = mean(Phosphate),
                    SD = sd(Phosphate)) %>% 
   dplyr::mutate(lower = Average - SD,
                 upper = Average + SD)
 # View(phosphate.6)
-dplyr::select(phosphate.6, -lower, -upper)
+dplyr::select(phosphate.7, -lower, -upper)
 ```
 
 ```{r}
-gg2 <- phosphate.6 %>% 
+gg2 <- phosphate.7 %>% 
   ggplot(aes(x=Time, y=Average, color=Group)) +
   geom_line() +
   # geom_errorbar(aes(ymin=lower, ymax=upper, width=0.1)) +
@@ -164,7 +201,7 @@ gg2
 
 In "real life" one would have processed the phosphate data in one continuous chain of pipes:
 ```{r message=FALSE, warning=FALSE}
-phosphate.x <- readr::read_csv("data/phosphate.csv") %>% 
+phosphate.x <- readr::read_csv("data/phosphate_b.csv") %>% 
   dplyr::select(-X1) %>% 
   tidyr::pivot_longer(-group, names_to = "Time", values_to = "Phosphate") %>% 
   dplyr::rename(Group = group) %>% 
