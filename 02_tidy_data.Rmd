@@ -59,8 +59,7 @@ A whole collection of R packages known as the [tidyverse](https://www.tidyverse.
 (1) In this part of the workshop we will use two examples to illustrate how to convert data from a wide to a long (tidy) arrangement and how such data can then be summarised in tabular or graphical format.  
 (2) Along the way we will use some functions from the 'dplyr' package to manipulate data frames  
 
-## Code  
-### Setup  
+## Setup  
 ```{r chunk options, include=FALSE}
 # setting rmarkdown options
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
@@ -87,10 +86,10 @@ library(ggplot2)
 # help(package="ggplot2")
 ```
 
-### Time curve of phosphate data  
+## Time curve of phosphate data  
 *(Original data kindly provided by Felix Effah)*  
 
-#### Step 1: Load the original data.
+### Step 1: Load the original data.
 
 * If you check the CSV file in Excel, you will notice that the first column does not have a header, so R makes one up ("X1").  
 * Also notice that some data are missing at t0.5 and t1. R inserted NA instead.  
@@ -101,7 +100,7 @@ phosphate <- readr::read_csv("data/phosphate_b.csv")
 print(phosphate)
 ```
 
-#### Step 2: The first column contains just row numbers, so we can remove it:
+### Step 2: The first column contains just row numbers, so we can remove it:
 ```{r}
 phosphate.2 <- phosphate %>% 
   dplyr::select(-X1)
@@ -109,7 +108,7 @@ phosphate.2 <- phosphate %>%
 print(phosphate.2)
 ```
 
-#### Step 3: The values in columns t0 to t5 all contain the same type of data - phosphate concentrations. Let's convert the table to a tidy (long) format using the `pivot_longer()` function from the '[tidyr](https://tidyr.tidyverse.org/)' package.
+### Step 3: The values in columns t0 to t5 all contain the same type of data - phosphate concentrations. Let's convert the table to a tidy (long) format using the `pivot_longer()` function from the '[tidyr](https://tidyr.tidyverse.org/)' package.
 ```{r}
 phosphate.3 <- phosphate.2 %>% 
   tidyr::pivot_longer(-group, names_to = "Time", values_to = "Phosphate")
@@ -117,7 +116,7 @@ phosphate.3 <- phosphate.2 %>%
 print(phosphate.3)
 ```
 
-#### Step 3: For easier inspection let's sort the data frame by group and time:  
+### Step 3: For easier inspection let's sort the data frame by group and time:  
 ```{r}
 phosphate.4 <- phosphate.3 %>% 
   dplyr::rename(Group = group) %>% 
@@ -126,7 +125,7 @@ phosphate.4 <- phosphate.3 %>%
 print(phosphate.4)
 ```
 
-#### Step 4: Fix the format of the Time column  
+### Step 4: Fix the format of the Time column  
 The letter 't' in the Time column is redundant and would prevent us from plotting the data on a numerical time axis. We remove the letter 't' and convert the column to numeric format:  
 (The 'stringr' package includes a whole host of useful function to manipulate text.)  
 
@@ -138,7 +137,7 @@ phosphate.5 <- phosphate.4 %>%
 print(phosphate.5)
 ```
 
-#### Step 5: Cleaning the table  
+### Step 5: Cleaning the table  
 As noted earlier, the table includes a number of rows with missing data. Let's remove these rows.  
 
 * There are different ways to accomplish this task. One approach using base R would be to use the `complete.cases()` function.  
@@ -169,7 +168,7 @@ print(phosphate.6)
 
 (notice how the new table now has only 259 instead of 264 rows)  
 
-#### Step 6: Draw a boxplot  
+### Step 6: Draw a boxplot  
 Inspection of the data indicates that we have 20 replicates for each combination of group and time point.  
 We could illustrate the spread of the data as a boxplot (keeping n mind that boxplots for for categorical x values):
 ```{r phosphate boxplot}
@@ -179,7 +178,7 @@ gg1 <- phosphate.6 %>%
 gg1
 ```
 
-#### Step 7: Draw a scatterplot  
+### Step 7: Draw a scatterplot  
 Alternatively, one might want to calculate averages for each time point and display the data as a scatterplot.  
 In this case we first use the `group_by()` and `summarise()` functions from the tidyverse 'dplyr' package:  
 ```{r phosphate scatterplot}
@@ -222,95 +221,6 @@ phosphate.summary <- phosphate.x %>%
   dplyr::mutate(lower = Average - SD,
                 upper = Average + SD)
 ```
-
-### Merging / joining data frames  
-
-* A very common task. One example would be to have two tables: one with gene symbols and expression data, and another with the gene symbols and gene names - your goal would be to add the gene names to expression data.  
-* In general programming parlance people refer to this manipulation as performing a _**join**_.  
-* The function we use in base R is `merge()`.  
-* The 'dplyr' package also provides a number of join function that work well with magrittr pipes and other tidyverse functions.  
-
-Here, let's go back to our exam files from the first script...  
-
-#### Step 1: Load the blueprint file and select the relevant columns  
-```{r open blueprint, message=FALSE}
-csv.file <- "data/OSPE_Blueprint.csv"
-stopifnot(file.exists(csv.file))
-df.blueprint <- readr::read_csv(file=csv.file, col_names = TRUE, comment = "#") %>% 
-  dplyr::select(Question, Correct_Answer)
-print(df.blueprint)
-```
-
-#### Step 2: Load the file with the student answers  
-
-* __Note__  
-* that the answer data include a question/column (OSPE6) for which there is no match in the blueprint table loaded above.  
-* and that the blueprint data included a question (OSPE5) for which there is no match in the results table.  
-
-```{r open tsv, message=FALSE}
-tsv.file <- "data/OSPE_Results_Raw.tsv"
-stopifnot(file.exists(tsv.file))
-df.results <- readr::read_tsv(file=tsv.file, col_names = TRUE, comment = "#")
-print(df.results)
-```
-
-#### Step 3: Reshape student answers into 'tidy' (long) format  
-```{r}
-results.long <- tidyr::pivot_longer(df.results, -Cand.No, names_to = "Question", values_to = "Answer")
-print(results.long)
-```
-
-#### Step 4: Merge results and blueprint  
-```{r}
-df.merged <- merge(x=results.long, y=df.blueprint, by="Question", all.x=FALSE, all.y=FALSE) %>% 
-  dplyr::select(Cand.No, everything()) %>% 
-  dplyr::arrange(Cand.No, desc(Question))
-print(df.merged)
-```
-
-**Note that the merged table above contains no rows for OSPE5 or OSPE6.** By default, the `merge()` function will only include data for which it finds matches in *both* tables. This is also called an **INNER JOIN**. Decisions as to whether include all rows from one or both input tables is set by the `all.x` and `all.y` arguments to the `merge()` function.  
-
-To illustrate the different options, let's focus on just one of the candidates (1001):  
-
-**INNER JOIN** - Include only matches from both tables:
-```{r}
-merge(x=results.long, y=df.blueprint, by="Question", all.x=FALSE, all.y=FALSE) %>% 
-  dplyr::select(Cand.No, everything()) %>% 
-  dplyr::filter(Cand.No == 1001) %>% 
-  dplyr::arrange(Question)
-```
-
-**LEFT JOIN** - Include all data from table 1 (`all.x=TRUE`), only matching rows from table 2 (`all.y=FALSE`):
-```{r}
-merge(x=results.long, y=df.blueprint, by="Question", all.x=TRUE, all.y=FALSE) %>% 
-  dplyr::select(Cand.No, everything()) %>% 
-  dplyr::filter(Cand.No == 1001) %>% 
-  dplyr::arrange(Question)
-```
-
-**RIGHT JOIN** - Include all data from table 2 (`all.y=TRUE`), only matching rows from table 1 (`all.x=FALSE`):
-```{r}
-merge(x=results.long, y=df.blueprint, by="Question", all.x=FALSE, all.y=TRUE) %>% 
-  dplyr::select(Cand.No, everything()) %>% 
-  dplyr::filter(Cand.No %in% c(1001, NA)) %>%
-  dplyr::arrange(Question)
-```
-
-**OUTER JOIN** - Include all data from table 1 (`all.x=TRUE`), and all data from table 2 (`all.y=TRUE`):
-```{r}
-merge(x=results.long, y=df.blueprint, by="Question", all.x=TRUE, all.y=TRUE) %>% 
-  dplyr::select(Cand.No, everything()) %>% 
-  dplyr::filter(Cand.No %in% c(1001, NA)) %>%
-  dplyr::arrange(Question)
-```
-
-#### Step 5: "Mark" the answers  
-```{r}
-df.marked <- df.merged %>% 
-  dplyr::mutate(Answer_Correct = (Answer == Correct_Answer))
-print(df.marked)
-```
-
 
 ## EXERCISE  
 
