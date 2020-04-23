@@ -16,6 +16,19 @@ output:
 
 **_Please follow the instructions in the README file before starting this tutorial._**
 
+## Objectives  
+
+(1) In this part of the workshop we will use two examples to illustrate how to convert data from a wide to a long (tidy) arrangement and how such data can then be summarised in tabular or graphical format.  
+(2) Along the way we will use some functions from the 'dplyr' package to manipulate data frames  
+
+    * Changing column names: `dplyr::rename()`  
+    * Extract or remove specific columns: `dplyr::select()`  
+    * Sort data frames: `dplyr::arrange()`  
+    * Modify or add columns: `dplyr::mutate`  
+    * Selecting rows based on specific criteria: `dplyr::filter()`
+
+(3) Cleaning: we will look at an example of how to remove rows with missing data points using the `tidyr::drop_na()` function.  
+(4) We will show how to perform summary calculations on specific groups of rows within a data frame (`dplyr::group_by` and `dplyr::summarise` functions)
 
 ## Introduction: the 'tidy data' concept  
 A lot of effort during data analysis projects goes into shaping input data into a format that can then be analysed with standard tools, a process known as '[data wrangling](https://en.wikipedia.org/wiki/Data_wrangling)' or 'data munging'.  
@@ -53,11 +66,6 @@ In the first table above the four question columns all contain the same type of 
 The data would have to be converted into the format of the second (long-format) table to be conveniently analysed.  
 
 A whole collection of R packages known as the [tidyverse](https://www.tidyverse.org/) are built around the tidy data concept ([Wickham, 2013](https://www.jstatsoft.org/index.php/jss/article/view/v059i10/v59i10.pdf)). These packages are very widely used in the R community.  
-
-## Objectives  
-
-(1) In this part of the workshop we will use two examples to illustrate how to convert data from a wide to a long (tidy) arrangement and how such data can then be summarised in tabular or graphical format.  
-(2) Along the way we will use some functions from the 'dplyr' package to manipulate data frames  
 
 ## Setup  
 ```{r chunk options, include=FALSE}
@@ -141,32 +149,18 @@ print(phosphate.5)
 As noted earlier, the table includes a number of rows with missing data. Let's remove these rows.  
 
 * There are different ways to accomplish this task. One approach using base R would be to use the `complete.cases()` function.  
-* Here, we'll use `dplyr::filter()` in combination with the `is.na()` function.  
-* `is.na()` returns a vector of boolean/logical values indicating whether or not the items of an input vector are NA or not.  
-
-Example illustrating `is.na()` function:
-```{r}
-# Define a vector:
-v <- c(1, NA, 5, 6, 0, NA)
-# Which of the values are NA ?
-is.na(v)
-```
-
-Inserting an exclamation mark (!) means NOT and will invert the boolean values:
-```{r}
-# Which of the values are NOT NA ?
-!is.na(v)
-```
-
+* Another option would be to use the `dplyr::filter()` in combination with the `is.na()` function.  
+* Here we use the most convenient tool: `tidyr::drop_na`.  
 
 ```{r}
-phosphate.6 <- phosphate.5 %>% 
-  dplyr::filter(!is.na(Phosphate))
+# drop_na(phosphate.5) would remove rows containing NA in any column
+# drop_na(phosphate.5, Phosphate) will remove rows with NA specifically in the Phosphate column
+phosphate.6 <- tidyr::drop_na(phosphate.5, Phosphate)
 # View(phosphate.6)
 print(phosphate.6)
 ```
 
-(notice how the new table now has only 259 instead of 264 rows)  
+*(notice how the new table now has only 259 instead of 264 rows)*  
 
 ### Step 6: Draw a boxplot  
 Inspection of the data indicates that we have 20 replicates for each combination of group and time point.  
